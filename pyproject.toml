@@ -1,0 +1,16 @@
+[project]
+name = "zprolog"
+version = "0.1.0"
+description = "A simple educational Prolog interpreter."
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.2",
+]
