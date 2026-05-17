@@ -36,11 +36,12 @@ class InputStream:
 
 def lex_input_stream(input: InputStream):
     while c := input.peek():
-        print(c)
-        if c.isspace():
-            _ = input.read_while(lambda c: c.isspace())
-        elif c.isalpha() or c == '_':
+        if c in '(),.': # single character tokens
+            yield input.read()
+        elif c.isalpha() or c == '_': # identifiers
             yield input.read_while(lambda c: c.isalnum() or c == '_')
+        elif c.isspace(): # skip whitespace
+            _ = input.read_while(lambda c: c.isspace())
         else:
             raise Exception(f"Unknown character '{c}'")
 

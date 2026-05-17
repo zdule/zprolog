@@ -6,3 +6,7 @@ def test_only_whitespace():
 def test_identifiers():
     text = "  one Two Three Forty2 with_an_underscore "
     assert list(lex(text)) == text.split()
+
+def test_single_character_tokens():
+    text = "(()).,."
+    assert list(lex(text)) == list(text)
