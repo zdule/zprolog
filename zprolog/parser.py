@@ -1,9 +1,8 @@
 from typing import Iterator
 
-from zprolog.lexer import Peekable, is_identifier, is_variable
+from zprolog.lexer import Peekable, is_identifier, is_variable, Token
 from zprolog.program import CompoundTerm, Query, Rule, Term, Variable
 
-type Token = str
 type Tokens = Peekable[Token]
 
 def raise_unexpected_token(expected: str | list[str], token: Token):
@@ -13,6 +12,8 @@ def raise_unexpected_token(expected: str | list[str], token: Token):
         expected = f"'{expected}'"
     raise Exception(f"Expected {expected}, found '{token}'")
 
+# Main entry point into the parser.
+# Parses rules and queries from lexed tokens.
 def parse_program(tokens: Tokens) -> Iterator[Query | Rule]:
     while token := tokens.peek():
         if token == "?":
@@ -37,7 +38,7 @@ def parse_rule(tokens: Tokens):
 def parse_term(tokens: Tokens) -> Term:
     identifier = parse_identifier(tokens)
     if is_variable(identifier):
-        return Variable(identifier)
+        return identifier
     arguments = []
     if tokens.peek() == "(":
         arguments = parse_argument_list(tokens)
@@ -67,6 +68,7 @@ def parse_non_empty_token_list(tokens: Tokens) -> list[Term]:
         else:
             return token_list 
 
+# Consume the next token and check that it is exactly the expect token.
 def check_token(tokens: Tokens, expected: Token, allowed = None):
     if allowed is None:
         allowed = expected

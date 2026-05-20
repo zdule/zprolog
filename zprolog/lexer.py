@@ -1,7 +1,11 @@
-from io import TextIOBase
-from typing import Callable
 from collections.abc import Iterator
 import itertools
+from io import TextIOBase
+from typing import Callable
+
+type Char = str
+type Token = str
+type Chars = Peekable[Char]
 
 # Utility class for consuming an file.
 # Importantly has peek and put_back.
@@ -32,13 +36,16 @@ class Peekable[T]:
         except StopIteration:
             return None
 
-def is_identifier(token: str):
-    return token.isalnum()
+# Returns true if token is a valid identifier
+def is_identifier(token: Token) -> bool:
+    return token.isidentifier()
 
-def is_variable(token: str):
+# Returns true if token is a variable.
+# Variables are identifiers that start with an uppercase character.
+def is_variable(token: Token) -> bool:
     return is_identifier(token) and token[0].isupper()
 
-def read_while(peekable: Peekable[str], predicate: Callable[[str], bool]) -> str:
+def read_while(peekable: Chars, predicate: Callable[[Char], bool]) -> Token:
     result = []
     for c in peekable:
         if predicate(c):
@@ -48,13 +55,13 @@ def read_while(peekable: Peekable[str], predicate: Callable[[str], bool]) -> str
             break
     return ''.join(result)
 
-def read_implication_symbol(input: Peekable[str]):
+def read_implication_symbol(input: Chars) -> Token:
     assert next(input) == ":"
     if c := next(input) != "-":
         raise Exception(f"Expected '-' after ':' but found {c}")
     return ":-"
 
-def lex_input_peekable(input: Peekable[str]):
+def lex_chars(input: Chars) -> Iterator[Token]:
     while c := input.peek():
         if c in '(),.?': # single character tokens
             yield next(input)
@@ -68,7 +75,7 @@ def lex_input_peekable(input: Peekable[str]):
             raise Exception(f"Unknown character '{c}'")
 
 # Produces an iterator of lexical elements from the input.
-def lex(input: str | TextIOBase | Iterator[str]):
+def lex(input: str | TextIOBase | Iterator[str]) -> Iterator[Token]:
     stream = None
     match input:
         case str():
@@ -77,4 +84,4 @@ def lex(input: str | TextIOBase | Iterator[str]):
             stream = Peekable(itertools.chain.from_iterable(input))
         case _:
             stream = Peekable(input)
-    return lex_input_peekable(stream)
+    return lex_chars(stream)

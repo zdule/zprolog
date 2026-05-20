@@ -1,11 +1,7 @@
+from typing import TypeGuard
+
+type Variable = str
 type Term = CompoundTerm | Variable
-
-class Variable:
-    def __init__(self, identifier):
-        self.identifier = identifier
-
-    def is_variable(self):
-        return True
 
 class CompoundTerm:
     def __init__(self, functor: str, arguments: list[Term] = []):
@@ -35,3 +31,9 @@ class Program:
 class Query:
     def __init__(self, term: Term):
         self.term = term
+
+def is_variable(t: Term) -> TypeGuard[str]:
+    return isinstance(t, str)
+
+def is_compund_term(t: Term) -> TypeGuard[CompoundTerm]:
+    return isinstance(t, CompoundTerm)

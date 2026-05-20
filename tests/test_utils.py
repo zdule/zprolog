@@ -12,4 +12,4 @@ def p_rule(s: str) -> Rule:
     return parse_rule(lexed(s))
 
 def p_program(s: str) -> Program:
-    return Program(list(parse_program(lexed(s))))
+    return Program([rule for rule in parse_program(lexed(s)) if isinstance(rule, Rule)])

@@ -1,8 +1,9 @@
+from collections.abc import Mapping
 from functools import reduce
 from typing import Iterator
 from zprolog.program import *
 
-type Substitution = dict[Variable, Term]
+type Substitution = Mapping[Variable, Term]
 
 # The current solve does not know anything about variables.
 # For every solution it finds it emits one empty Bindings.
@@ -20,38 +21,42 @@ def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_gen
             if upd_s is not None:
                 yield from solve_goal(program, rule.body + goal[1:], upd_s, upd_variable_generator)
 
+# Attemps to unify two terms a and b while respecting substitution s.
+# If one of the terms has variables that need to unify with particular terms, these
+# are added to the resulting substituion which is returned.
+# s is the substitution that we lazily apply to a and b. We do not eagerly apply them
+# before calling unify for performance reasons.
+#
+# None is returned if substitution fails.
 def unify(s: Substitution, a: Term, b: Term) -> Substitution | None:
-    # early out
-    if s is None: return None
-
     # Unifying X with X.
-    if a.is_variable() and b.is_variable() and a.identifier == b.identifier:
+    if is_variable(a) and is_variable(b) and a == b:
         return s
 
     # Apply substitutions, but without recursing into compunds.
-    if a.is_variable() and a.identifier in s:
-        a = s[a.identifier]
-    if b.is_variable() and b.identifier in s:
-        b = s[b.identifier]
+    if is_variable(a) and a in s:
+        a = s[a]
+    if is_variable(b) and b in s:
+        b = s[b]
 
-    if a.is_variable():
-        if occurs(a.identifier, b): # occurs check
+    if is_variable(a):
+        if occurs(a, b): # occurs check
             return None
-        return update_substituion(s, a.identifier, b)
-    if b.is_variable():
+        return update_substituion(s, a, b)
+    if is_variable(b):
         return unify(s, b, a)
 
-    assert not (a.is_variable() or b.is_variable())
+    assert is_compund_term(a) and is_compund_term(b)
     if a.functor != b.functor:
         return None
     if len(a.arguments) != len(b.arguments):
         return None
-    return reduce(lambda s, ab: unify(s, *ab), zip(a.arguments, b.arguments), s)
+    return reduce(lambda s, ab: None if s is None else unify(s, *ab), zip(a.arguments, b.arguments), s)
 
 def anonymize_variables(r: Rule, variable_generator: dict[str, int]) -> tuple[Rule, dict[str, int]]:
-    variables = collect_variables(r.head) | set().union(*map(collect_variables, r.body))
+    variables = collect_variables(r.head) | {v for t in r.body for v in collect_variables(t)} 
     new_variables = {id: variable_generator.get(id, 0) + 1 for id in variables}
-    s = {id: Variable(f"@{id}_{counter}") for (id, counter) in new_variables.items()}
+    s = {id: f"@{id}_{counter}" for (id, counter) in new_variables.items()}
     variable_generator = variable_generator | new_variables
     r = Rule(substitute(s, r.head), list(map(lambda t: substitute(s, t), r.body)))
     return (r, variable_generator)
@@ -65,23 +70,26 @@ def update_substituion(s: Substitution, id: str, t: Term) -> Substitution:
     upd_s[id] = t
     return upd_s
 
-# Return a term obtained by applying substitution s to term t.
 def substitute(s: Substitution, t: Term) -> Term:
-    if t.is_variable():
-        if t.identifier in s:
-            return s[t.identifier]
+    """Apply substitution to a term."""
+    if is_variable(t):
+        if t in s:
+            return s[t]
         else:
             return t
     else:
+        assert is_compund_term(t)
         return CompoundTerm(t.functor, [substitute(s, arg) for arg in t.arguments])
 
 # Returns true if id occurs as a variable in t:
 def occurs(id: str, t: Term) -> bool:
-    if t.is_variable():
-        return t.identifier == id
+    if is_variable(t):
+        return t == id
+    assert is_compund_term(t)
     return any((occurs(id, arg) for arg in t.arguments))
 
 def collect_variables(t: Term) -> set[str]:
-    if t.is_variable():
-        return {t.identifier}
+    if is_variable(t):
+        return {t}
+    assert is_compund_term(t)
     return set().union(*map(collect_variables, t.arguments))

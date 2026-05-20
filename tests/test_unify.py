@@ -11,10 +11,10 @@ def test_unify_atom_with_different_attom():
     assert unify({}, a, b) is None
 
 def test_unify_variable_with_self():
-    a = Variable('A')
+    a = 'A'
     assert unify({}, a, a) == {}
 
 def test_unify_variable_with_other_variable():
-    a = Variable('A')
-    b = Variable('B')
+    a = 'A'
+    b = 'B'
     assert unify({}, a, b) == {'A': b}
