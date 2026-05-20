@@ -1,4 +1,7 @@
+import readline  # noqa: F401 (imported for side effects)
+
 from argparse import ArgumentParser
+from collections.abc import Iterator
 from sys import stdin
 from typing import IO
 
@@ -7,7 +10,14 @@ from zprolog.parser import parse_program, Query, Rule
 from zprolog.program import Program, Query, Rule
 from zprolog.solver import solve
 
-def process_file(program: Program, f: IO[str]):
+def from_readline() -> Iterator[str]:
+    while True:
+        try:
+            yield from input()
+        except EOFError:
+            return
+
+def process_file(program: Program, f: IO[str] | Iterator[str]):
     for command in parse_program(Peekable(lex(f))):
         match command:
             case Query():
@@ -27,7 +37,7 @@ def main():
     if args.file:
         with open(args.file) as f:
             process_file(program, f)
-    process_file(program, stdin)
+    process_file(program, from_readline())
 
 if __name__ == "__main__":
     main()
