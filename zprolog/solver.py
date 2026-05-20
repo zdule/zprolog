@@ -5,9 +5,10 @@ from zprolog.program import *
 
 type Substitution = Mapping[Variable, Term]
 
-# The current solve does not know anything about variables.
-# For every solution it finds it emits one empty Bindings.
 def solve(program: Program, query: Query) -> Iterator[Substitution]:
+    """The current solve does not know anything about variables.
+    For every solution it finds it emits one empty Bindings.
+    """
     return solve_goal(program, [query.term], {}, {})
 
 def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_generator) -> Iterator[Substitution]:
@@ -21,14 +22,15 @@ def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_gen
             if upd_s is not None:
                 yield from solve_goal(program, rule.body + goal[1:], upd_s, upd_variable_generator)
 
-# Attemps to unify two terms a and b while respecting substitution s.
-# If one of the terms has variables that need to unify with particular terms, these
-# are added to the resulting substituion which is returned.
-# s is the substitution that we lazily apply to a and b. We do not eagerly apply them
-# before calling unify for performance reasons.
-#
-# None is returned if substitution fails.
 def unify(s: Substitution, a: Term, b: Term) -> Substitution | None:
+    """Attempt to unify two terms a and b while respecting substitution s.
+
+    If one of the terms has variables that need to unify with particular terms, these
+    are added to the resulting substitution which is returned.
+    s is applied lazily to a and b for performance reasons.
+
+    Returns None if unification fails.
+    """
     # Unifying X with X.
     if is_variable(a) and is_variable(b) and a == b:
         return s
@@ -61,9 +63,10 @@ def anonymize_variables(r: Rule, variable_generator: dict[str, int]) -> tuple[Ru
     r = Rule(substitute(s, r.head), list(map(lambda t: substitute(s, t), r.body)))
     return (r, variable_generator)
 
-# Return the result of updating the substitution s with id -> t.
-# s is also applied on t.
 def update_substituion(s: Substitution, id: str, t: Term) -> Substitution:
+    """Return the result of updating substitution s with id -> t.
+    s is also applied to t.
+    """
     assert id not in s
     t = substitute(s, t)
     upd_s = {k: substitute({id: t}, v) for (k,v) in s.items()}
@@ -81,8 +84,8 @@ def substitute(s: Substitution, t: Term) -> Term:
         assert is_compund_term(t)
         return CompoundTerm(t.functor, [substitute(s, arg) for arg in t.arguments])
 
-# Returns true if id occurs as a variable in t:
 def occurs(id: str, t: Term) -> bool:
+    """Return True if variable id occurs in term t."""
     if is_variable(t):
         return t == id
     assert is_compund_term(t)

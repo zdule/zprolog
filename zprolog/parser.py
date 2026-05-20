@@ -12,9 +12,8 @@ def raise_unexpected_token(expected: str | list[str], token: Token):
         expected = f"'{expected}'"
     raise Exception(f"Expected {expected}, found '{token}'")
 
-# Main entry point into the parser.
-# Parses rules and queries from lexed tokens.
 def parse_program(tokens: Tokens) -> Iterator[Query | Rule]:
+    """Main entry point into the parser. Parses rules and queries from lexed tokens."""
     while token := tokens.peek():
         if token == "?":
             check_token(tokens, "?")
@@ -68,8 +67,8 @@ def parse_non_empty_token_list(tokens: Tokens) -> list[Term]:
         else:
             return token_list 
 
-# Consume the next token and check that it is exactly the expect token.
 def check_token(tokens: Tokens, expected: Token, allowed = None):
+    """Consume the next token and check that it is exactly the expected token."""
     if allowed is None:
         allowed = expected
 

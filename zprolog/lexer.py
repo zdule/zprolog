@@ -7,9 +7,10 @@ type Char = str
 type Token = str
 type Chars = Peekable[Char]
 
-# Utility class for consuming an file.
-# Importantly has peek and put_back.
 class Peekable[T]:
+    """Utility class for consuming an iterator.
+    Importantly has peek and put_back.
+    """
     def __init__(self, iter: Iterator[T]):
         self.iter = iter
         self.peeked = None
@@ -36,13 +37,14 @@ class Peekable[T]:
         except StopIteration:
             return None
 
-# Returns true if token is a valid identifier
 def is_identifier(token: Token) -> bool:
+    """Returns true if token is a valid identifier."""
     return token.isidentifier()
 
-# Returns true if token is a variable.
-# Variables are identifiers that start with an uppercase character.
 def is_variable(token: Token) -> bool:
+    """Returns true if token is a variable.
+    Variables are identifiers that start with an uppercase character.
+    """
     return is_identifier(token) and token[0].isupper()
 
 def read_while(peekable: Chars, predicate: Callable[[Char], bool]) -> Token:
@@ -74,8 +76,8 @@ def lex_chars(input: Chars) -> Iterator[Token]:
         else:
             raise Exception(f"Unknown character '{c}'")
 
-# Produces an iterator of lexical elements from the input.
 def lex(input: str | TextIOBase | Iterator[str]) -> Iterator[Token]:
+    """Produces an iterator of lexical elements from the input."""
     stream = None
     match input:
         case str():
