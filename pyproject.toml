@@ -12,5 +12,9 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
+    "pyright>=1.1.409",
     "pytest>=8.4.2",
 ]
+
+[tool.pyright]
+typeCheckingMode = "basic"

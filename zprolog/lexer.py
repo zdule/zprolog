@@ -10,7 +10,7 @@ class Peekable[T]:
         self.iter = iter
         self.peeked = None
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[T]:
         return self
 
     def __next__(self) -> T:
@@ -18,16 +18,19 @@ class Peekable[T]:
             c = self.peeked
             self.peeked = None
             return c
-        return next(self.iter, None)
+        return next(self.iter)
 
-    def put_back(self, c: str):
+    def put_back(self, c: T):
         assert(self.peeked is None)
         self.peeked = c
 
-    def peek(self) -> str:
-        c = next(self)
-        self.put_back(c)
-        return c
+    def peek(self) -> T | None:
+        try:
+            c = next(self)
+            self.put_back(c)
+            return c
+        except StopIteration:
+            return None
 
 def is_identifier(token: str):
     return token.isalnum()
@@ -37,7 +40,7 @@ def is_variable(token: str):
 
 def read_while(peekable: Peekable[str], predicate: Callable[[str], bool]) -> str:
     result = []
-    while c := next(peekable):
+    for c in peekable:
         if predicate(c):
             result.append(c)
         else:
