@@ -6,9 +6,6 @@ from zprolog.program import *
 type Substitution = Mapping[Variable, Term]
 
 def solve(program: Program, query: Query) -> Iterator[Substitution]:
-    """The current solve does not know anything about variables.
-    For every solution it finds it emits one empty Bindings.
-    """
     return solve_goal(program, [query.term], {}, {})
 
 def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_generator) -> Iterator[Substitution]:
