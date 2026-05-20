@@ -1,5 +1,5 @@
 from io import TextIOBase
-from typing import IO, Callable
+from typing import Callable
 from collections.abc import Iterator
 import itertools
 
@@ -10,7 +10,10 @@ class Peekable[T]:
         self.iter = iter
         self.peeked = None
 
-    def read(self) -> T:
+    def __iter__(self):
+        return self
+
+    def __next__(self) -> T:
         if self.peeked != None:
             c = self.peeked
             self.peeked = None
@@ -22,7 +25,7 @@ class Peekable[T]:
         self.peeked = c
 
     def peek(self) -> str:
-        c = self.read()
+        c = next(self)
         self.put_back(c)
         return c
 
@@ -34,7 +37,7 @@ def is_variable(token: str):
 
 def read_while(peekable: Peekable[str], predicate: Callable[[str], bool]) -> str:
     result = []
-    while c := peekable.read():
+    while c := next(peekable):
         if predicate(c):
             result.append(c)
         else:
@@ -43,15 +46,15 @@ def read_while(peekable: Peekable[str], predicate: Callable[[str], bool]) -> str
     return ''.join(result)
 
 def read_implication_symbol(input: Peekable[str]):
-    assert input.read() == ":"
-    if c := input.read() != "-":
+    assert next(input) == ":"
+    if c := next(input) != "-":
         raise Exception(f"Expected '-' after ':' but found {c}")
     return ":-"
 
 def lex_input_peekable(input: Peekable[str]):
     while c := input.peek():
         if c in '(),.?': # single character tokens
-            yield input.read()
+            yield next(input)
         elif c == ":": 
             yield read_implication_symbol(input)
         elif c.isalpha() or c == '_': # identifiers

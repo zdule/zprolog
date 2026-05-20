@@ -26,7 +26,7 @@ def parse_program(tokens: Tokens) -> Iterator[Query | Rule]:
 def parse_rule(tokens: Tokens):
     head = parse_term(tokens)
     body = []
-    match tokens.read():
+    match next(tokens):
         case ".":
             pass
         case ":-":
@@ -44,7 +44,7 @@ def parse_term(tokens: Tokens) -> Term:
     return CompoundTerm(identifier, arguments)
 
 def parse_identifier(tokens: Tokens) -> Token:
-    token = tokens.read()
+    token = next(tokens)
     if not is_identifier(token):
         raise_unexpected_token("an identifier", token)
     return token
@@ -63,7 +63,7 @@ def parse_non_empty_token_list(tokens: Tokens) -> list[Term]:
     while True:
         token_list.append(parse_term(tokens))
         if tokens.peek() == ",":
-            _ = tokens.read()
+            _ = next(tokens)
         else:
             return token_list 
 
@@ -71,6 +71,6 @@ def check_token(tokens: Tokens, expected: Token, allowed = None):
     if allowed is None:
         allowed = expected
 
-    token = tokens.read()
+    token = next(tokens)
     if token != expected:
         raise_unexpected_token(expected, token)
