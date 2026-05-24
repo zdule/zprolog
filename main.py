@@ -1,14 +1,14 @@
-import readline  # noqa: F401 (imported for side effects)
+import readline  # imported for side effects
 
 from argparse import ArgumentParser
 from collections.abc import Iterator
-from sys import stdin
 from typing import IO
 
 from zprolog.lexer import lex, Peekable
 from zprolog.parser import parse_program, Query, Rule
 from zprolog.program import Program, Query, Rule
 from zprolog.solver import solve
+import zprolog.kql # imported to initialize the kql built in
 
 def from_readline() -> Iterator[str]:
     while True:

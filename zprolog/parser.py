@@ -1,7 +1,7 @@
 from typing import Iterator
 
-from zprolog.lexer import Peekable, is_identifier, is_variable, Token
-from zprolog.program import CompoundTerm, Query, Rule, Term, Variable
+from zprolog.lexer import Peekable, is_identifier, is_variable, is_string_literal, Token
+from zprolog.program import CompoundTerm, Query, Rule, Term, Variable, StringLiteral
 
 type Tokens = Peekable[Token]
 
@@ -35,6 +35,10 @@ def parse_rule(tokens: Tokens):
     return Rule(head, body)
 
 def parse_term(tokens: Tokens) -> Term:
+    if literal := tokens.peek():
+        if is_string_literal(literal):
+            return StringLiteral(next(tokens))
+
     identifier = parse_identifier(tokens)
     if is_variable(identifier):
         return identifier

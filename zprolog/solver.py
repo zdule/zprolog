@@ -5,6 +5,8 @@ from zprolog.program import *
 
 type Substitution = Mapping[Variable, Term]
 
+builtins = {}
+
 def solve(program: Program, query: Query) -> Iterator[Substitution]:
     return solve_goal(program, [query.term], {}, {})
 
@@ -13,6 +15,9 @@ def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_gen
         yield s
     else:
         first_term = goal[0]
+        if is_compund_term(first_term) and first_term.functor in builtins:
+            for upd_s in builtins[first_term.functor](s, first_term):
+                yield from solve_goal(program, goal[1:], upd_s, variable_generator)
         for rule in program.rules:
             rule, upd_variable_generator = anonymize_variables(rule, variable_generator)
             upd_s = unify(s, first_term, rule.head)
@@ -28,8 +33,8 @@ def unify(s: Substitution, a: Term, b: Term) -> Substitution | None:
 
     Returns None if unification fails.
     """
-    # Unifying X with X.
-    if is_variable(a) and is_variable(b) and a == b:
+    # Unifying identical Terms
+    if a == b:
         return s
 
     # Apply substitutions, but without recursing into compunds.
@@ -77,6 +82,8 @@ def substitute(s: Substitution, t: Term) -> Term:
             return s[t]
         else:
             return t
+    elif is_string_literal(t):
+        return t
     else:
         assert is_compund_term(t)
         return CompoundTerm(t.functor, [substitute(s, arg) for arg in t.arguments])
@@ -85,11 +92,16 @@ def occurs(id: str, t: Term) -> bool:
     """Return True if variable id occurs in term t."""
     if is_variable(t):
         return t == id
+    elif is_string_literal(t):
+        return False
     assert is_compund_term(t)
     return any((occurs(id, arg) for arg in t.arguments))
 
 def collect_variables(t: Term) -> set[str]:
     if is_variable(t):
         return {t}
-    assert is_compund_term(t)
-    return set().union(*map(collect_variables, t.arguments))
+    elif is_compund_term(t):
+        return set().union(*map(collect_variables, t.arguments))
+    else:
+        assert is_string_literal(t)
+        return set()

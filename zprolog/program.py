@@ -1,9 +1,9 @@
 from itertools import starmap
 from operator import eq
-from typing import Self, TypeGuard
+from typing import TypeGuard
 
 type Variable = str
-type Term = CompoundTerm | Variable
+type Term = CompoundTerm | Variable | StringLiteral
 
 class CompoundTerm:
     def __init__(self, functor: str, arguments: list[Term] = []):
@@ -53,8 +53,23 @@ class Query:
     def __init__(self, term: Term):
         self.term = term
 
+class StringLiteral:
+    def __init__(self, literal: str):
+        self.literal = literal[1:-1]
+
+    def __repr__(self) -> str:
+        return f'"{self.literal}"'
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, StringLiteral):
+            return False
+        return self.literal == other.literal
+
 def is_variable(t: Term) -> TypeGuard[str]:
     return isinstance(t, str)
 
 def is_compund_term(t: Term) -> TypeGuard[CompoundTerm]:
     return isinstance(t, CompoundTerm)
+
+def is_string_literal(t: Term) -> TypeGuard[StringLiteral]:
+    return isinstance(t, StringLiteral)

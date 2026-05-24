@@ -47,6 +47,9 @@ def is_variable(token: Token) -> bool:
     """
     return is_identifier(token) and token[0].isupper()
 
+def is_string_literal(token: Token) -> bool:
+    return len(token) > 2 and token[0] == '"' and token[-1] == '"'
+
 def read_while(peekable: Chars, predicate: Callable[[Char], bool]) -> Token:
     result = []
     for c in peekable:
@@ -63,6 +66,12 @@ def read_implication_symbol(input: Chars) -> Token:
         raise Exception(f"Expected '-' after ':' but found {c}")
     return ":-"
 
+def read_string_literal(input: Chars) -> Token:
+    assert next(input) == '"' # consume the literal
+    literal = read_while(input, lambda c: c != '"') # read until "
+    assert next(input) == '"'
+    return f'"{literal}"'
+
 def lex_chars(input: Chars) -> Iterator[Token]:
     while c := input.peek():
         if c in '(),.?': # single character tokens
@@ -73,6 +82,8 @@ def lex_chars(input: Chars) -> Iterator[Token]:
             yield read_while(input, lambda c: c.isalnum() or c == '_')
         elif c.isspace(): # skip whitespace
             _ = read_while(input, lambda c: c.isspace())
+        elif c == '"': # read a string literal
+            yield read_string_literal(input)
         else:
             raise Exception(f"Unknown character '{c}'")
 

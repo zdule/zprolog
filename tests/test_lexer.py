@@ -21,3 +21,7 @@ def test_is_identifier():
     assert not is_identifier("abcd ")
     assert not is_identifier("1abcd")
     assert not is_identifier("")
+
+def test_string_literals():
+    text = 'abc (x "abcd x 21231##@1&(*&)" x'
+    assert list(lex(text)) == ['abc', '(', 'x', '"abcd x 21231##@1&(*&)"', 'x']
