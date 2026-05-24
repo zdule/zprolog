@@ -7,7 +7,7 @@ from typing import IO
 from zprolog.lexer import lex, Peekable
 from zprolog.parser import parse_program, Query, Rule
 from zprolog.program import Program, Query, Rule
-from zprolog.solver import solve
+from zprolog.solver import solve, Substitution
 import zprolog.kql # imported to initialize the kql built in
 
 def from_readline() -> Iterator[str]:
@@ -17,13 +17,16 @@ def from_readline() -> Iterator[str]:
         except EOFError:
             return
 
+def print_sol(sol: Substitution):
+    print({k: v for k, v in sol.items() if "@" not in k})
+
 def process_file(program: Program, f: IO[str] | Iterator[str]):
     for command in parse_program(Peekable(lex(f))):
         match command:
             case Query():
                 print(f"?- {command.term}")
                 for sol in solve(program, command):
-                    print(sol)
+                    print_sol(sol)
             case Rule():
                 program.add_rule(command)
 
