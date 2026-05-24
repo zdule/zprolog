@@ -1,4 +1,7 @@
-import readline  # imported for side effects
+try: # importing readline for the side effect on input()
+    import readline
+except ImportError:
+    import pyreadline3
 
 from argparse import ArgumentParser
 from collections.abc import Iterator
