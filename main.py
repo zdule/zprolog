@@ -16,6 +16,7 @@ import zprolog.kql # imported to initialize the kql built in
 def from_readline() -> Iterator[str]:
     while True:
         try:
+            print("Ready")
             yield from input()
         except EOFError:
             return
@@ -27,7 +28,7 @@ def process_file(program: Program, f: IO[str] | Iterator[str]):
     for command in parse_program(Peekable(lex(f))):
         match command:
             case Query():
-                print(f"?- {command.term}")
+                print(command)
                 for sol in solve(program, command):
                     print_sol(sol)
             case Rule():

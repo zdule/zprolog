@@ -17,7 +17,7 @@ def parse_program(tokens: Tokens) -> Iterator[Query | Rule]:
     while token := tokens.peek():
         if token == "?":
             check_token(tokens, "?")
-            query = parse_term(tokens)
+            query = parse_non_empty_term_list(tokens)
             check_token(tokens, ".")
             yield Query(query)
         else:
@@ -30,7 +30,7 @@ def parse_rule(tokens: Tokens):
         case ".":
             pass
         case ":-":
-            body = parse_non_empty_token_list(tokens)
+            body = parse_non_empty_term_list(tokens)
             check_token(tokens, ".")
     return Rule(head, body)
 
@@ -58,11 +58,11 @@ def parse_argument_list(tokens: Tokens) -> list[Term]:
     if tokens.peek() == ")":
         arguments = []
     else:
-        arguments = parse_non_empty_token_list(tokens)
+        arguments = parse_non_empty_term_list(tokens)
     check_token(tokens, ")", [",", ")"])
     return arguments
 
-def parse_non_empty_token_list(tokens: Tokens) -> list[Term]:
+def parse_non_empty_term_list(tokens: Tokens) -> list[Term]:
     token_list = []
     while True:
         token_list.append(parse_term(tokens))

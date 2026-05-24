@@ -48,10 +48,13 @@ class Program:
 
 class Query:
     """A query is a logical formula we need to prove.
-    Extends Prolog with "Query ::= ? Term ." for interactive queries.
+    Extends Prolog with "Query ::= ? Term_1, Term_2, ..., Term_n ." for interactive queries.
     """
-    def __init__(self, term: Term):
-        self.term = term
+    def __init__(self, terms: list[Term]):
+        self.terms = terms
+
+    def __repr__(self) -> str:
+        return "?- " + ", ".join([repr(t) for t in self.terms])
 
 class StringLiteral:
     def __init__(self, literal: str):

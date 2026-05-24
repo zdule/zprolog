@@ -8,7 +8,7 @@ type Substitution = Mapping[Variable, Term]
 builtins = {}
 
 def solve(program: Program, query: Query) -> Iterator[Substitution]:
-    return solve_goal(program, [query.term], {}, {})
+    return solve_goal(program, query.terms, {}, {})
 
 def solve_goal(program: Program, goal: list[Term], s: Substitution, variable_generator) -> Iterator[Substitution]:
     if not goal:
