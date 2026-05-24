@@ -5,6 +5,11 @@ from collections.abc import Iterator
 from zprolog.solver import Substitution, substitute, builtins, update_substituion
 from zprolog.program import StringLiteral, Term, is_compund_term, is_string_literal, is_variable
 
+kusto_verbose = False
+def set_kusto_verbose(verbose):
+    global kusto_verbose
+    kusto_verbose = verbose
+
 kusto_client = None
 db = None
 
@@ -54,6 +59,9 @@ def built_in_kql(s: Substitution, a: Term) -> Iterator[Substitution]:
             query_with_filters.append(f"| where {column_name} == '{arg.literal}'") # no string escaping for now.
     query_with_filters.append("| distinct *")
     query_with_filters = "\n".join(query_with_filters)
+
+    if kusto_verbose:
+        print(query_with_filters)
 
     global kusto_client
     assert kusto_client is not None

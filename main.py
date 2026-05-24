@@ -11,7 +11,7 @@ from zprolog.lexer import lex, Peekable
 from zprolog.parser import parse_program, Query, Rule
 from zprolog.program import Program, Query, Rule
 from zprolog.solver import solve, Substitution
-import zprolog.kql # imported to initialize the kql built in
+from zprolog.kql import set_kusto_verbose # imported to initialize the kql built in
 
 def from_readline() -> Iterator[str]:
     while True:
@@ -37,7 +37,11 @@ def process_file(program: Program, f: IO[str] | Iterator[str]):
 def main():
     parser = ArgumentParser()
     parser.add_argument("-f", "--file", help="Load program from file")
+    parser.add_argument("--kusto-verbose", help="Print kusto queries", default=False, action="store_true")
     args = parser.parse_args()
+
+    global kusto_verbose
+    set_kusto_verbose(args.kusto_verbose)
 
     program = Program()
 
